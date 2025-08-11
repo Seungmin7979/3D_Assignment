@@ -8,7 +8,7 @@ public interface IInteractable
     public void OnInteract();
 }
 
-public class ItemObject : MonoBehaviour
+public class ItemObject : MonoBehaviour , IInteractable
 {
     public ItemData data;
 
