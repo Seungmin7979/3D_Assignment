@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,7 +18,9 @@ public class PlayerController : MonoBehaviour
     private float camCurXRot;
     public float lookSensitivity;
     private Vector2 mouseDelta;
+    public bool canLook = true;
 
+    public Action inventory;
     private Rigidbody _rigidbody;
 
     private void Awake()
@@ -36,7 +40,10 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
-        CameraLook();
+        if (canLook)
+        {
+            CameraLook();
+        }
     }
 
     void Move()
@@ -101,5 +108,35 @@ public class PlayerController : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void OnInventroy(InputAction.CallbackContext context)
+    {
+        if(context.phase == InputActionPhase.Started)
+        {
+            inventory?.Invoke();
+            ToggleCursor();
+        }
+    }
+
+    void ToggleCursor()
+    {
+        bool toggle = Cursor.lockState == CursorLockMode.Locked;
+        Cursor.lockState = toggle ? CursorLockMode.None : CursorLockMode.Locked;
+        canLook = !toggle;
+    }
+
+    private IEnumerator TempSpeedBoost(float boostAmount, float duration)
+    {
+        var playerController = CharacterManager.Instance.Player.controller;
+
+        playerController.moveSpeed += boostAmount; // 속도 증가
+        yield return new WaitForSeconds(duration); // 지속 시간 대기
+        playerController.moveSpeed -= boostAmount; // 원래 속도로 복귀
+    }
+
+    public void ApplySpeedBoost(float boostAmount, float duration)
+    {
+        StartCoroutine(TempSpeedBoost(boostAmount, duration));
     }
 }
